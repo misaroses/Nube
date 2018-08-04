@@ -1,8 +1,6 @@
-const express = require('express'),
-	  app = express(),
-	  http = require('http'),
-	  fs = require('fs'),
-	  path = require('path');
+const allcontrollers = require('./controllers/allcontrollers.js'),
+	  express = require('express'),
+	  app = express();
 
 var misael = {
 	nombre : 'misa',
@@ -11,96 +9,13 @@ var misael = {
 
 
 //Ruta con express modulo
-
 app.set('view engine', 'ejs');
 
-app.get('/',function(req,res) {
-
-	res.sendFile(__dirname + '/public/index.html');
-
-});
-
-app.get('/login',function(req,res) {
-
-	res.sendFile(__dirname + '/public/login.html');
-
-});
-
-app.get('/profile',function(req,res) {
-
-	ruta = './public_ftp/uploads/';
-
-	
+//Activar el assets
+app.use(express.static('./assets'));
 
 
-	
-	fs.readdir(ruta, (err, files)=>{
-
-		if (err) {
-			console.log('ERROR___________');
-			console.log(err.message);
-		} else {
-
-			function detectType(b) {
-				switch(b){
-					case '.dir' : 
-						return 'folder';
-						break;
-					case '.jpg' : 
-						return 'image';
-						break;
-					default : 
-						return 'document';
-				}
-			}
-
-			var newFiles = {};
-
-			for (var i = files.length - 1; i >= 0; i--) {
-
-				r = ruta + files[i];
-
-				ruta_env = __dirname + '/public_ftp/uploads/' + files[i];
-
-
-				function addJSON(a,size,r) { newFiles[i] = {nombre : files[i], tipo : a, peso : size, ruta : r} }
-
-				const stats = fs.statSync(r);
-				const fsizeB = stats.size;
-				//Convert the file size to megabytes (optional)
-				const fsizeM = fsizeB / 1000000.0;
-
-
-				//detectar si es un diretorio
-				dir = fs.statSync(r).isDirectory();
-
-				if (dir) {
-					addJSON('.dir',fsizeM,ruta_env);
-				}
-				else {
-					type = path.extname(files[i]);
-					addJSON(type,fsizeM,ruta_env);
-				}
-
-				if (i === 0) {
-
-					var newFile = JSON.stringify(newFiles);
-					console.log('ver el json: '+ newFile);
-
-					res.render('profile',{ file : newFiles, detectType : detectType });
-
-				}
-
-			}
-
-		}
-
-
-	});
-
-
-
-});
+allcontrollers(app);
 
 
 app.listen(3000);
